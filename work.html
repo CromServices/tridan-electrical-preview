@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TriDan Electrical — Work</title>
+<meta name="description" content="Website preview.">
+<meta property="og:description" content="Website preview.">
+<meta name="twitter:description" content="Website preview.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="styles.css">
+<script>
+(function(){
+  try {
+    var t = localStorage.getItem("tridan-theme");
+    if (t !== "light" && t !== "dark") {
+      t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="index.html"><img src="assets/logo-400.webp" alt="TriDan Electrical Contractors" width="400" height="139"></a>
+    <nav class="desk" aria-label="Site">
+      <a class="nav-link" href="work.html">Work</a>
+      <a class="nav-link" href="about.html">About</a>
+      <a class="nav-link" href="quote.html">Quote</a>
+      <a class="nav-link" href="quote.html#book">Book a visit</a>
+      <a class="nav-link" href="contact.html">Contact</a>
+      <a class="nav-link phone-btn" href="tel:+61732818081">(07) 3281 8081</a>
+    </nav>
+    <div class="actions">
+      <a class="btn btn-ghost-light phone-btn" href="tel:+61732818081">Call (07) 3281 8081</a>
+      <a class="btn btn-accent quote-btn" href="quote.html">Request a quote</a>
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch light/dark">
+        <span class="theme-toggle-face">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</header>
+<main>
+<section class="section paper">
+  <div class="wrap">
+    <p class="kicker">Work</p>
+    <h1>High quality electrical, data and air-conditioning solutions</h1>
+    <p>Residential, commercial and industrial applications, from new houses to pad-mount transformer sites.</p>
+    <div class="work-list">
+      <article><h3>New houses and re-wires</h3><p>New houses, general light and power point installations, and re-wires.</p></article>
+      <article><h3>Switchboard upgrades and safety switches</h3><p>Switchboard upgrades, safety switches, and RCD testing and maintenance.</p></article>
+      <article><h3>Air conditioning</h3><p>Sales, servicing and installations of split and ducted systems, plus upgrades and replacements.</p></article>
+      <article><h3>Data, phone and AV cabling</h3><p>Data, phone and AV cabling, plus school projector and AV systems.</p></article>
+      <article><h3>Smoke alarms, test and tagging</h3><p>Smoke alarms, test and tagging, and electrical maintenance.</p></article>
+      <article><h3>Commercial work</h3><p>Commercial electrical design and construction, project management, LED and energy efficient solutions, emergency and exit lighting, generators, and power factor correction.</p></article>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <div class="brand">
+      <img src="assets/logo-400.webp" alt="" width="400" height="139">
+      <p>© 2026 TriDan Electrical Contractors Pty Ltd</p>
+    </div>
+    <p><a href="tel:+61732818081">(07) 3281 8081</a> · <a href="mailto:info@tridanelectrical.com.au">info@tridanelectrical.com.au</a></p>
+  </div>
+</footer>
+<div class="sticky-call" aria-label="Call or request a quote">
+  <div class="wrap">
+    <a class="call" href="tel:+61732818081">Call</a>
+    <a class="quote" href="quote.html">Quote</a>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

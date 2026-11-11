@@ -1,5 +1,5 @@
 import { createServer } from "node:http";
-import { readFile, mkdir } from "node:fs/promises";
+import { readFile, mkdir, readdir } from "node:fs/promises";
 import { existsSync, createReadStream, statSync } from "node:fs";
 import { extname, join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -74,10 +74,19 @@ async function setTheme(page, theme) {
 }
 
 try {
-  const html = await readFile(join(root, "index.html"), "utf8");
+  const htmlFiles = (await readdir(root)).filter((f) => f.endsWith(".html"));
+  let noindexOk = true;
+  for (const f of htmlFiles) {
+    const html = await readFile(join(root, f), "utf8");
+    if (!/name="robots"\s+content="noindex"/.test(html)) {
+      noindexOk = false;
+      fail("noindex meta", f);
+    }
+    if (/<select\b/i.test(html)) fail("native select", f);
+    if (!/content="Website preview\."/.test(html)) fail("meta description", f);
+  }
+  if (noindexOk) ok("noindex meta on every page (" + htmlFiles.join(", ") + ")");
   const robots = await readFile(join(root, "robots.txt"), "utf8");
-  if (/name="robots"\s+content="noindex"/.test(html)) ok("noindex meta");
-  else fail("noindex meta");
   if (/User-agent:\s*\*\s*Disallow:\s*\//i.test(robots)) ok("robots.txt Disallow");
   else fail("robots.txt Disallow");
   if (/overflow-x\s*:\s*hidden/.test(await readFile(join(root, "styles.css"), "utf8"))) {
@@ -217,10 +226,103 @@ try {
     /\bABN\b/,
     /confirmation email/i,
     /arrives in your email/i,
+    /\bconcept\b/i,
+    /\bvendor\b/i,
+    /\bbot\b/i,
+    /\btool\b/i,
   ];
   const hits = bans.filter((re) => re.test(allowedSlots)).map((re) => String(re));
   if (hits.length === 0) ok("banned-text scan");
   else fail("banned-text scan", hits.join(", "));
+
+  async function contrastReport(theme) {
+    await setTheme(page, theme);
+    await page.waitForTimeout(400);
+    return page.evaluate((themeName) => {
+      function parse(c) {
+        const m = String(c).match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
+        if (!m) return null;
+        return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] };
+      }
+      function lin(c) {
+        c = c / 255;
+        return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+      }
+      function lum(p) {
+        return 0.2126 * lin(p.r) + 0.7152 * lin(p.g) + 0.0722 * lin(p.b);
+      }
+      function blend(fg, bg) {
+        const a = fg.a;
+        return {
+          r: fg.r * a + bg.r * (1 - a),
+          g: fg.g * a + bg.g * (1 - a),
+          b: fg.b * a + bg.b * (1 - a),
+          a: 1,
+        };
+      }
+      function ratio(fg, bg) {
+        const L1 = lum(fg), L2 = lum(bg);
+        const hi = Math.max(L1, L2), lo = Math.min(L1, L2);
+        return (hi + 0.05) / (lo + 0.05);
+      }
+      function bgOf(el) {
+        let n = el;
+        while (n && n !== document.documentElement) {
+          const b = parse(getComputedStyle(n).backgroundColor);
+          if (b && b.a > 0.01) return b;
+          n = n.parentElement;
+        }
+        return parse(getComputedStyle(document.body).backgroundColor) || { r: 255, g: 255, b: 255, a: 1 };
+      }
+      const fails = [];
+      const named = {};
+      const els = document.querySelectorAll("body *");
+      els.forEach((el) => {
+        const s = getComputedStyle(el);
+        if (s.display === "none" || s.visibility === "hidden" || Number(s.opacity) < 0.5) return;
+        if (el.closest("[hidden]")) return;
+        if (el.tagName === "SCRIPT" || el.tagName === "STYLE" || el.tagName === "SVG" || el.tagName === "PATH" || el.tagName === "IMG") return;
+        const text = (el.childNodes && [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) || el.matches("button, a, .kicker, .btn, .pill, .chip");
+        if (!text) return;
+        const fg = parse(s.color);
+        if (!fg) return;
+        const bg = bgOf(el);
+        const mixed = fg.a < 1 ? blend(fg, bg) : fg;
+        const r = ratio(mixed, bg);
+        const label = (el.className && String(el.className).split(" ")[0]) || el.tagName;
+        const t = (el.textContent || "").trim().slice(0, 40);
+        if (r < 4.5 && t) fails.push({ theme: themeName, label, t, r: +r.toFixed(2), color: s.color, bg: s.backgroundColor });
+      });
+      function pair(sel, name) {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const s = getComputedStyle(el);
+        const fg = parse(s.color);
+        const bg = bgOf(el);
+        named[name] = { color: s.color, bg: "rgb(" + Math.round(bg.r) + ", " + Math.round(bg.g) + ", " + Math.round(bg.b) + ")", ratio: +ratio(fg, bg).toFixed(2) };
+      }
+      pair(".hero .kicker", "hero kicker");
+      pair(".section.paper .kicker", "services kicker");
+      pair(".section.wash .kicker", "about kicker");
+      pair(".hero .cta .btn-accent", "hero Call");
+      pair(".hero .cta .btn-ghost-light", "hero quote ghost");
+      pair(".actions .btn-accent", "header Request a quote");
+      pair(".sticky-call a.call", "mobile Call");
+      pair(".book-form .btn-accent", "Book button");
+      return { theme: themeName, named, fails: fails.slice(0, 20), failCount: fails.length };
+    }, theme);
+  }
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(base, { waitUntil: "networkidle" });
+  const lightC = await contrastReport("light");
+  const darkC = await contrastReport("dark");
+  console.log("CONTRAST light", JSON.stringify(lightC.named, null, 2));
+  console.log("CONTRAST dark", JSON.stringify(darkC.named, null, 2));
+  if (lightC.failCount === 0) ok("contrast all text pairs light ≥ 4.5:1");
+  else fail("contrast light", JSON.stringify(lightC.fails));
+  if (darkC.failCount === 0) ok("contrast all text pairs dark ≥ 4.5:1");
+  else fail("contrast dark", JSON.stringify(darkC.fails));
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(base, { waitUntil: "networkidle" });

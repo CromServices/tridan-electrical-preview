@@ -72,8 +72,7 @@
     });
   }
 
-  var dayRoot = document.querySelector(".day-chips");
-  if (dayRoot) {
+  function fillDays(dayRoot) {
     var today = ymdInTz(new Date());
     var html = "";
     var firstOn = false;
@@ -110,35 +109,37 @@
     dayRoot.innerHTML = html;
   }
 
-  var summaryEl = document.getElementById("book-summary");
-  function bookSummary() {
-    var dayBtn = document.querySelector(".day-chips .is-on");
-    var timeBtn = document.querySelector(".time-pills .is-on");
-    var jobBtn = document.querySelector(".job-chips .is-on");
-    var bits = [];
-    if (dayBtn) bits.push(dayBtn.getAttribute("data-label"));
-    if (timeBtn) bits.push(timeBtn.textContent.trim());
-    if (jobBtn) bits.push(jobBtn.textContent.trim());
-    var line = bits.join(" · ");
-    if (summaryEl) summaryEl.textContent = line;
-    return line;
-  }
-  selectGroup(dayRoot, bookSummary);
-  selectGroup(document.querySelector(".time-pills"), bookSummary);
-  selectGroup(document.querySelector(".job-chips"), bookSummary);
-  bookSummary();
-
-  var bookForm = document.querySelector(".book-form");
-  var bookSuccess = document.getElementById("book-success");
-  var bookError = document.getElementById("book-error");
-  if (bookForm) {
-    bookForm.addEventListener("submit", function (e) {
+  function bindBook(root) {
+    var dayRoot = root.querySelector(".day-chips");
+    var summaryEl = root.querySelector(".summary") || document.getElementById("book-summary");
+    if (dayRoot) fillDays(dayRoot);
+    function bookSummary() {
+      var dayBtn = root.querySelector(".day-chips .is-on");
+      var timeBtn = root.querySelector(".time-pills .is-on");
+      var jobBtn = root.querySelector(".job-chips .is-on");
+      var bits = [];
+      if (dayBtn) bits.push(dayBtn.getAttribute("data-label"));
+      if (timeBtn) bits.push(timeBtn.textContent.trim());
+      if (jobBtn) bits.push(jobBtn.textContent.trim());
+      var line = bits.join(" · ");
+      if (summaryEl) summaryEl.textContent = line;
+      return line;
+    }
+    selectGroup(dayRoot, bookSummary);
+    selectGroup(root.querySelector(".time-pills"), bookSummary);
+    selectGroup(root.querySelector(".job-chips"), bookSummary);
+    bookSummary();
+    root.addEventListener("submit", function (e) {
       e.preventDefault();
-      var dayBtn = document.querySelector(".day-chips .is-on");
-      var timeBtn = document.querySelector(".time-pills .is-on");
-      var jobBtn = document.querySelector(".job-chips .is-on");
-      var name = (document.getElementById("b-name") || {}).value || "";
-      var phone = (document.getElementById("b-phone") || {}).value || "";
+      var dayBtn = root.querySelector(".day-chips .is-on");
+      var timeBtn = root.querySelector(".time-pills .is-on");
+      var jobBtn = root.querySelector(".job-chips .is-on");
+      var nameEl = root.querySelector("[name=bname], #b-name");
+      var phoneEl = root.querySelector("[name=bphone], #b-phone");
+      var name = (nameEl && nameEl.value) || "";
+      var phone = (phoneEl && phoneEl.value) || "";
+      var bookError = root.querySelector(".form-error") || document.getElementById("book-error");
+      var bookSuccess = root.parentElement.querySelector("#book-success") || document.getElementById("book-success");
       if (!dayBtn || !timeBtn || !jobBtn || !name.trim() || !phone.trim()) {
         if (bookError) {
           bookError.style.display = "block";
@@ -147,26 +148,27 @@
         return;
       }
       if (bookError) bookError.style.display = "none";
-      bookForm.hidden = true;
+      root.hidden = true;
       if (bookSuccess) {
         bookSuccess.classList.add("is-on");
         bookSuccess.hidden = false;
-        var line = document.getElementById("book-success-line");
+        var line = bookSuccess.querySelector("#book-success-line") || bookSuccess;
         if (line) line.textContent = "Visit request saved: " + bookSummary() + ".";
       }
     });
   }
 
-  var quoteForm = document.querySelector(".quote-form");
-  var quoteSuccess = document.getElementById("quote-success");
-  if (quoteForm) {
+  document.querySelectorAll(".book-form").forEach(bindBook);
+
+  document.querySelectorAll(".quote-form").forEach(function (quoteForm) {
     quoteForm.addEventListener("submit", function (e) {
       e.preventDefault();
       quoteForm.hidden = true;
+      var quoteSuccess = quoteForm.parentElement.querySelector(".thanks") || document.getElementById("quote-success");
       if (quoteSuccess) {
         quoteSuccess.classList.add("is-on");
         quoteSuccess.hidden = false;
       }
     });
-  }
+  });
 })();
