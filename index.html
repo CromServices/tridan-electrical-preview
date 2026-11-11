@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TriDan Electrical — Home</title>
+<meta name="description" content="Website preview.">
+<meta property="og:description" content="Website preview.">
+<meta name="twitter:description" content="Website preview.">
 <meta name="robots" content="noindex">
-<title>Electrical, data and air conditioning, Ipswich | TriDan Electrical</title>
-<meta name="description" content="Electrical, data and air conditioning for homes, shops and industry in Ipswich. Call (07) 3281 8081.">
 <link rel="preload" href="fonts/manrope-700.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/sourcesans3.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
@@ -130,26 +132,28 @@
       <label>Phone <input type="tel" name="phone" autocomplete="tel"></label>
       <label class="full">Email <input type="email" name="email" autocomplete="email"></label>
       <label class="full">Suburb or address <input type="text" name="suburb"></label>
-      <label class="full">Type of work
-        <select name="type">
-          <option value="">Please choose</option>
-          <option>New houses and re-wires</option>
-          <option>Switchboard upgrades and safety switches</option>
-          <option>Air conditioning</option>
-          <option>Data, phone and AV cabling</option>
-          <option>Smoke alarms, test and tagging</option>
-          <option>Commercial work</option>
-          <option>Other</option>
-        </select>
-      </label>
+      <fieldset class="full">
+        <legend>Type of work</legend>
+        <div class="pill-radios" role="radiogroup" aria-label="Type of work">
+          <label class="pill"><input type="radio" name="type" value="">Please choose</label>
+          <label class="pill"><input type="radio" name="type" value="New houses and re-wires">New houses and re-wires</label>
+          <label class="pill"><input type="radio" name="type" value="Switchboard upgrades and safety switches">Switchboard upgrades and safety switches</label>
+          <label class="pill"><input type="radio" name="type" value="Air conditioning">Air conditioning</label>
+          <label class="pill"><input type="radio" name="type" value="Data, phone and AV cabling">Data, phone and AV cabling</label>
+          <label class="pill"><input type="radio" name="type" value="Smoke alarms, test and tagging">Smoke alarms, test and tagging</label>
+          <label class="pill"><input type="radio" name="type" value="Commercial work">Commercial work</label>
+          <label class="pill"><input type="radio" name="type" value="Other">Other</label>
+        </div>
+      </fieldset>
       <label class="full">A short description <textarea name="details"></textarea></label>
-      <label>Preferred time to talk
-        <select name="when">
-          <option>Morning</option>
-          <option>Midday</option>
-          <option>Afternoon</option>
-        </select>
-      </label>
+      <fieldset>
+        <legend>Preferred time to talk</legend>
+        <div class="pill-radios" role="radiogroup" aria-label="Preferred time to talk">
+          <label class="pill"><input type="radio" name="when" value="Morning" checked>Morning</label>
+          <label class="pill"><input type="radio" name="when" value="Midday">Midday</label>
+          <label class="pill"><input type="radio" name="when" value="Afternoon">Afternoon</label>
+        </div>
+      </fieldset>
       <div class="submit"><button class="btn btn-accent" type="submit">Request a quote</button></div>
     </form>
     <p class="thanks" id="quote-success" hidden>Thanks. Your quote request is saved.</p>
